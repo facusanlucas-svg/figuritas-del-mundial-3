@@ -118,7 +118,7 @@ function renderStickers() {
         const displayName = s.nombre;
         return `<div class="sticker-card ${estado || ''}" id="sc-${s.id}" onclick="toggleStickerMenu('${s.id}', event)">
             <div class="sticker-name">${displayName}</div>
-            ${estado ? `<div class="sticker-estado">${estadoLabel[estado]}${cantLabel}</div>` : '<div class="sticker-estado" style="color:#64748b">Sin marcar</div>'}
+            ${estado ? `<div class="sticker-estado">${({tengo:'✅ Tengo',me_falta:'❌ Me falta',repetida:'🔄 Repetida'})[estado]}${cantLabel||''}</div>` : '<div class="sticker-estado" style="color:#64748b">Sin marcar</div>'}
             <div class="sticker-menu" id="menu-${s.id}">
                 <button onclick="event.stopPropagation();setStickerState('${s.id}','tengo')">✅ Tengo</button>
                 <button onclick="event.stopPropagation();setStickerState('${s.id}','me_falta')">❌ Me falta</button>
