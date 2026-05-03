@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figuritas del Mundial 2026 🌍</title>
+    <meta name="description" content="La app definitiva para intercambiar figuritas del Mundial 2026 con tus amigos">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+    <div class="auth-bg">
+        <div class="floating-ball ball-1">⚽</div>
+        <div class="floating-ball ball-2">🏆</div>
+        <div class="floating-ball ball-3">⭐</div>
+        <div class="floating-ball ball-4">🌍</div>
+        <div class="floating-ball ball-5">⚽</div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="trophy-icon">🏆</div>
+                <h1>Mundial 2026</h1>
+                <p class="auth-subtitle">Figuritas & Intercambios</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs">
+                <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Iniciar Sesión</button>
+                <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Registrarse</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">📧 Email</label>
+                    <input type="email" id="login-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">🔒 Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <div id="login-error" class="error-msg hidden"></div>
+                <button type="submit" class="btn-primary full-width" id="login-btn">
+                    <span>Entrar</span>
+                    <span class="btn-icon">→</span>
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-nombre">👤 Nombre</label>
+                        <input type="text" id="reg-nombre" placeholder="Juan" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-apellido">👤 Apellido</label>
+                        <input type="text" id="reg-apellido" placeholder="Pérez" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">📧 Email</label>
+                    <input type="email" id="reg-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-lote">🎫 Tu Lote</label>
+                    <input type="text" id="reg-lote" placeholder="Ej: LOTE-A123" required>
+                    <small class="form-hint">El código de tu lote de sobres</small>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">🔒 Contraseña</label>
+                    <input type="password" id="reg-password" placeholder="••••••••" required minlength="6">
+                </div>
+                <div id="register-error" class="error-msg hidden"></div>
+                <button type="submit" class="btn-primary full-width" id="register-btn">
+                    <span>Crear Cuenta</span>
+                    <span class="btn-icon">🚀</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById(`${tab}-form`).classList.add('active');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Entrando...';
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    email: document.getElementById('login-email').value,
+                    password: document.getElementById('login-password').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = '/dashboard';
+            } else {
+                document.getElementById('login-error').textContent = data.error;
+                document.getElementById('login-error').classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Entrar</span><span class="btn-icon">→</span>';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('register-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Creando cuenta...';
+            const res = await fetch('/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    nombre: document.getElementById('reg-nombre').value,
+                    apellido: document.getElementById('reg-apellido').value,
+                    email: document.getElementById('reg-email').value,
+                    lote: document.getElementById('reg-lote').value,
+                    password: document.getElementById('reg-password').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = '/dashboard';
+            } else {
+                document.getElementById('register-error').textContent = data.error;
+                document.getElementById('register-error').classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Crear Cuenta</span><span class="btn-icon">🚀</span>';
+            }
+        }
+    </script>
+</body>
+</html>

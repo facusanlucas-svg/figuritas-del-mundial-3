@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundial 2026 Figuritas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-page">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">🏆</div>
+        <div class="logo-text">
+            <span class="logo-title">Mundial</span>
+            <span class="logo-sub">2026</span>
+        </div>
+    </div>
+    <div class="user-badge">
+        <div class="user-avatar">{{ nombre[0] | upper }}</div>
+        <div class="user-info">
+            <span class="user-name">{{ nombre }}</span>
+            <span class="user-lote">Lote: <b id="my-lote-display">{{ lote }}</b></span>
+        </div>
+    </div>
+    <ul class="nav-links">
+        <li><a href="#" class="nav-item active" onclick="showSection('mis-figuritas')" id="nav-mis-figuritas">
+            <span class="nav-icon">📋</span><span>Mis Figuritas</span>
+        </a></li>
+        <li><a href="#" class="nav-item" onclick="showSection('comunidad')" id="nav-comunidad">
+            <span class="nav-icon">👥</span><span>Comunidad</span>
+        </a></li>
+        <li><a href="#" class="nav-item" onclick="showSection('negociar')" id="nav-negociar">
+            <span class="nav-icon">🤝</span><span>Negociar</span>
+        </a></li>
+        <li><a href="#" class="nav-item" onclick="showSection('juntadas')" id="nav-juntadas">
+            <span class="nav-icon">🏟️</span><span>Juntadas</span>
+        </a></li>
+        {% if is_admin %}
+        <li><a href="#" class="nav-item admin-link" onclick="showSection('admin')" id="nav-admin">
+            <span class="nav-icon">⚙️</span><span>Admin</span>
+            <span class="admin-badge">Admin</span>
+        </a></li>
+        {% endif %}
+        <li><a href="#" class="nav-item" onclick="deleteMyAccount()" style="color:var(--red); margin-top:2rem;">
+            <span class="nav-icon">⚠️</span><span>Borrar Cuenta</span>
+        </a></li>
+    </ul>
+    <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+    <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+    <!-- ── MIS FIGURITAS ── -->
+    <section id="section-mis-figuritas" class="content-section active">
+        <div class="section-header">
+            <h1>📋 Mis Figuritas</h1>
+            <div class="stats-bar" id="my-stats"></div>
+        </div>
+        <div class="filter-bar">
+            <input type="text" id="sticker-search" placeholder="🔍 Buscar figurita..." oninput="filterStickers()">
+            <div class="filter-btns">
+                <button class="filter-btn active" onclick="setFilter('todos', this)">Todos</button>
+                <button class="filter-btn" onclick="setFilter('tengo', this)">✅ Tengo</button>
+                <button class="filter-btn" onclick="setFilter('me_falta', this)">❌ Me Falta</button>
+                <button class="filter-btn" onclick="setFilter('repetida', this)">🔄 Repetidas</button>
+                <button class="filter-btn" onclick="copyStickerList()" style="margin-left: 8px; background: var(--accent); color: white; border: none;">📋 Copiar Lista</button>
+            </div>
+        </div>
+        <div class="stickers-grid" id="stickers-grid">
+            <div class="loading-spinner">Cargando figuritas...</div>
+        </div>
+    </section>
+
+    <!-- ── COMUNIDAD ── -->
+    <section id="section-comunidad" class="content-section">
+        <div class="section-header">
+            <h1>👥 Comunidad</h1>
+        </div>
+        <div class="community-layout">
+            <div class="community-left">
+                <h2 class="panel-title">💬 Mis Chats</h2>
+                <div id="pms-list" class="users-list" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                    <div class="loading-spinner">Cargando chats...</div>
+                </div>
+
+                <h2 class="panel-title">👥 Usuarios</h2>
+                <div id="users-list" class="users-list">
+                    <div class="loading-spinner">Cargando usuarios...</div>
+                </div>
+            </div>
+            <div class="community-right">
+                <div class="chat-header">
+                    <h2 class="panel-title" id="chat-title">💬 Chat General</h2>
+                    <button id="btn-chat-gral" class="hidden" onclick="loadChat('general')" style="background:var(--card-hover);color:var(--text);border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.8rem">⬅️ Volver a General</button>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="loading-spinner">Cargando mensajes...</div>
+                </div>
+                <div class="chat-input-bar">
+                    <input type="text" id="chat-input" placeholder="Escribí un mensaje..." onkeydown="if(event.key==='Enter') sendMessage()">
+                    <button class="btn-send" onclick="sendMessage()">Enviar ➤</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── NEGOCIAR ── -->
+    <section id="section-negociar" class="content-section">
+        <div class="section-header">
+            <h1>🤝 Negociar Figuritas</h1>
+        </div>
+        <div class="trade-layout">
+            <div class="trade-panel">
+                <h2 class="panel-title">Mis Repetidas</h2>
+                <div id="my-extras" class="extras-list"></div>
+            </div>
+            <div class="trade-panel">
+                <h2 class="panel-title">Iniciar Negociación</h2>
+                <div class="trade-form">
+                    <label>Seleccioná un usuario:</label>
+                    <select id="trade-user-select" onchange="loadUserForTrade()">
+                        <option value="">-- Elegir usuario --</option>
+                    </select>
+                    <div id="trade-user-info" class="trade-user-info hidden"></div>
+                    <label>Figuritas que ofrecés (tus repetidas):</label>
+                    <div id="offer-stickers" class="trade-sticker-select"></div>
+                    <label>Figuritas que pedís:</label>
+                    <div id="request-stickers" class="trade-sticker-select"></div>
+                    <div class="form-group">
+                        <label>Mensaje (opcional):</label>
+                        <textarea id="trade-message" placeholder="Aclaraciones del intercambio..." rows="2"></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="sendTradeOffer()">Enviar Propuesta 🤝</button>
+                </div>
+            </div>
+            <div class="trade-panel full-width">
+                <h2 class="panel-title">Mis Negociaciones</h2>
+                <div id="trades-list" class="trades-list"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── JUNTADAS ── -->
+    <section id="section-juntadas" class="content-section">
+        <div class="section-header">
+            <h1>🏟️ Juntadas</h1>
+        </div>
+        <div id="juntadas-list" class="juntadas-grid">
+            <div class="loading-spinner">Cargando juntadas...</div>
+        </div>
+    </section>
+
+    <!-- ── ADMIN ── -->
+    {% if is_admin %}
+    <section id="section-admin" class="content-section">
+        <div class="section-header">
+            <h1>⚙️ Panel de Admin</h1>
+            <span class="admin-badge-lg">facusanlucas@gmail.com</span>
+        </div>
+        <div class="admin-card">
+            <h2>➕ Crear Juntada</h2>
+            <form onsubmit="createJuntada(event)" class="admin-form">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" id="j-titulo" placeholder="Gran Juntada de Figuritas" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="j-desc" placeholder="Traé tus repetidas..." rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha y hora</label>
+                        <input type="datetime-local" id="j-fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lugar</label>
+                        <input type="text" id="j-lugar" placeholder="Plaza San Martín, Mendoza" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Publicar Juntada 🏟️</button>
+            </form>
+        </div>
+    </section>
+    {% endif %}
+</main>
+
+<!-- USER STICKERS MODAL -->
+<div id="user-modal" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal-card">
+        <button class="modal-close" onclick="document.getElementById('user-modal').classList.add('hidden')">✕</button>
+        <div id="modal-content"></div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}?v=123"></script>
+<script>
+    const IS_ADMIN = {{ 'true' if is_admin else 'false' }};
+    const MY_LOTE = "{{ lote }}";
+    const MY_NAME = "{{ nombre }}";
+    initApp();
+</script>
+</body>
+</html>
